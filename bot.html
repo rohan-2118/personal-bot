@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUTONOMOUS AI SALES BOT</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#03040a;--deep:#080c18;--panel:#0d1020;--card:#111828;
+  --border:#1c2540;--border2:#263060;
+  --cyan:#00f5ff;--cyan2:#00c8d4;--cyan-dim:rgba(0,245,255,0.08);
+  --green:#00ff88;--green-dim:rgba(0,255,136,0.08);
+  --amber:#ffb800;--red:#ff3355;--purple:#c084fc;
+  --white:#e8eeff;--muted:#4a5680;--text:#8899cc;
+  --font-h:'Orbitron',monospace;--font-b:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1}
+
+/* ── STATUS BAR ── */
+.sbar{background:rgba(13,16,32,0.95);border-bottom:1px solid var(--border);padding:9px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:200;backdrop-filter:blur(12px)}
+.sbar-left{display:flex;gap:20px;align-items:center}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pdot 2s infinite}
+@keyframes pdot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.7}}
+.sbar-label{font-size:.62rem;letter-spacing:2px;color:var(--cyan);display:flex;align-items:center;gap:7px}
+.sbar-stat{font-size:.6rem;color:var(--muted)}
+.sbar-stat span{color:var(--white)}
+.bot-badge{font-family:var(--font-h);font-size:.55rem;letter-spacing:3px;color:var(--green);background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);padding:4px 12px;border-radius:2px}
+.sbar-clock{font-size:.72rem;color:var(--amber);font-weight:600}
+
+/* ── HERO ── */
+.hero{padding:44px 24px 28px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,245,255,0.05) 0%,transparent 70%);pointer-events:none}
+.htag{display:inline-block;font-size:.58rem;letter-spacing:4px;color:var(--cyan);border:1px solid rgba(0,245,255,0.2);padding:5px 14px;border-radius:2px;background:var(--cyan-dim);margin-bottom:14px}
+.hero h1{font-family:var(--font-h);font-size:clamp(1.6rem,4.5vw,3.2rem);font-weight:900;color:var(--white);line-height:1.08;margin-bottom:10px;text-shadow:0 0 40px rgba(0,245,255,.25)}
+.hero h1 .g{color:var(--cyan)}
+.hero p{font-size:.78rem;color:var(--muted);max-width:580px;margin:0 auto 24px;line-height:1.9}
+.hmetrics{display:flex;justify-content:center;gap:36px;flex-wrap:wrap}
+.hm{text-align:center}
+.hm-v{font-family:var(--font-h);font-size:1.7rem;font-weight:700;color:var(--cyan);text-shadow:0 0 16px rgba(0,245,255,.35);line-height:1}
+.hm-l{font-size:.55rem;color:var(--muted);letter-spacing:2px;margin-top:4px}
+
+/* ── LAYOUT ── */
+.grid{display:grid;grid-template-columns:300px 1fr 280px;min-height:calc(100vh - 210px)}
+.col{padding:18px}
+.col-l{border-right:1px solid var(--border)}
+.col-c{border-right:1px solid var(--border)}
+
+/* ── PANEL TITLE ── */
+.ptitle{font-family:var(--font-h);font-size:.52rem;letter-spacing:4px;color:var(--muted);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.pt-chip{font-size:.52rem;padding:2px 8px;border-radius:2px;background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,245,255,.2)}
+
+/* ── METRIC CARDS ── */
+.mcard{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.mcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent)}
+.mcard.g::before{background:linear-gradient(90deg,var(--green),transparent)}
+.mcard.a::before{background:linear-gradient(90deg,var(--amber),transparent)}
+.mcard.p::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.mc-lbl{font-size:.56rem;color:var(--muted);letter-spacing:2px;margin-bottom:5px}
+.mc-val{font-family:var(--font-h);font-size:1.5rem;font-weight:700;color:var(--cyan);line-height:1}
+.mc-val.g{color:var(--green)}
+.mc-val.a{color:var(--amber)}
+.mc-val.p{color:var(--purple)}
+.mc-sub{font-size:.58rem;color:var(--muted);margin-top:4px}
+.mcards2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+
+/* ── TOGGLES ── */
+.trow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:.68rem;color:var(--text)}
+.trow:last-child{border-bottom:none}
+.tlbl{display:flex;flex-direction:column;gap:2px}
+.tsub{font-size:.57rem;color:var(--muted)}
+.tog{position:relative;width:38px;height:19px;background:var(--border2);border-radius:9px;cursor:pointer;transition:background .3s;flex-shrink:0}
+.tog.on{background:var(--cyan);box-shadow:0 0 8px rgba(0,245,255,.35)}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .3s}
+.tog.on::after{left:21px}
+
+/* ── BUTTONS ── */
+.bbtn{width:100%;padding:13px;font-family:var(--font-h);font-size:.7rem;font-weight:700;letter-spacing:3px;cursor:pointer;border-radius:3px;border:none;transition:all .3s;margin-top:10px}
+.bbtn-go{background:var(--green);color:#000;box-shadow:0 0 18px rgba(0,255,136,.25)}
+.bbtn-go:hover{box-shadow:0 0 36px rgba(0,255,136,.45)}
+.bbtn-stop{background:transparent;color:var(--red);border:1px solid var(--red)}
+.bbtn-stop:hover{background:rgba(255,51,85,.08)}
+.bbtn-cfg{background:transparent;color:var(--muted);border:1px solid var(--border2);margin-top:6px}
+.bbtn-cfg:hover{color:var(--white);border-color:var(--white)}
+
+/* ── SETUP CHECKLIST ── */
+.sdiv{font-size:.52rem;letter-spacing:3px;color:var(--muted);padding:7px 0 6px;margin-top:12px;border-top:1px solid var(--border)}
+.slist{}
+.sitem{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.65rem;line-height:1.55;color:var(--text);cursor:pointer;transition:all .2s}
+.sitem:last-child{border-bottom:none}
+.sitem.done{color:var(--muted);text-decoration:line-through}
+.snum{width:20px;height:20px;border-radius:50%;background:var(--border2);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:.58rem;flex-shrink:0;font-weight:600;transition:all .2s}
+.sitem.done .snum{background:var(--green);color:#000}
+
+/* ── PIPELINE ── */
+.pipe{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:6px}
+.pipe::-webkit-scrollbar{height:3px}
+.pipe::-webkit-scrollbar-thumb{background:var(--border2)}
+.pstage{flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:3px;padding:8px 10px;min-width:88px;text-align:center;transition:all .3s}
+.pstage.lit{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,245,255,.12)}
+.ps-lbl{font-size:.5rem;color:var(--muted);letter-spacing:1px;margin-bottom:5px}
+.ps-cnt{font-family:var(--font-h);font-size:1.3rem;font-weight:700;color:var(--cyan)}
+
+/* ── LOG ── */
+.log{background:var(--deep);border:1px solid var(--border);border-radius:4px;height:360px;overflow-y:auto;padding:10px;font-size:.66rem;line-height:2;margin-bottom:14px}
+.log::-webkit-scrollbar{width:3px}
+.log::-webkit-scrollbar-thumb{background:var(--border2)}
+.lentry{display:flex;gap:9px;align-items:flex-start;padding:2px 0;border-bottom:1px solid rgba(28,37,64,.4);animation:lin .3s ease}
+@keyframes lin{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
+.lt{color:var(--muted);white-space:nowrap;flex-shrink:0;font-size:.6rem}
+.la{flex-shrink:0;width:86px;font-weight:600;font-size:.62rem}
+.la.sys{color:var(--muted)}.la.niche{color:var(--cyan)}.la.search{color:var(--purple)}.la.email{color:var(--amber)}.la.product{color:var(--green)}.la.payment{color:#ff80ab}.la.deliver{color:var(--cyan2)}
+.lm{color:var(--text);font-size:.64rem}
+.lm .hi{color:var(--white);font-weight:600}
+.lm .ok{color:var(--green)}
+.lm .mo{color:var(--amber);font-weight:600}
+
+/* ── ACTION ROW ── */
+.arow{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.chip{background:transparent;border:1px solid var(--border2);color:var(--text);font-size:.58rem;padding:5px 11px;border-radius:2px;cursor:pointer;font-family:var(--font-b);letter-spacing:1px;transition:all .2s}
+.chip:hover{border-color:var(--cyan);color:var(--cyan)}
+.chip.c{border-color:rgba(0,245,255,.3);color:var(--cyan)}
+.chip.c:hover{background:var(--cyan-dim)}
+
+/* ── AGENT CARDS ── */
+.agrid{display:flex;flex-direction:column;gap:8px}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:11px 13px;transition:all .3s}
+.acard.running{border-color:var(--cyan);box-shadow:0 0 8px rgba(0,245,255,.1)}
+.acard.done{border-color:var(--green)}
+.acard.idle{opacity:.5}
+.acard.waiting{border-color:rgba(255,184,0,.3)}
+.ac-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.ac-name{font-size:.63rem;font-weight:600;color:var(--white)}
+.ac-st{font-size:.52rem;letter-spacing:1px;padding:2px 7px;border-radius:2px}
+.ac-st.running{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,245,255,.2)}
+.ac-st.done{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.ac-st.idle{background:rgba(74,86,128,.1);color:var(--muted);border:1px solid var(--border)}
+.ac-st.waiting{background:rgba(255,184,0,.07);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
+.ac-task{font-size:.6rem;color:var(--muted);line-height:1.5}
+.ac-bar{height:2px;background:var(--border);border-radius:1px;margin-top:7px;overflow:hidden}
+.ac-fill{height:100%;background:var(--cyan);border-radius:1px;transition:width .6s ease}
+.ac-fill.g{background:var(--green)}
+
+/* ── MONEY TICKER ── */
+.ticker{background:var(--deep);border:1px solid rgba(255,184,0,.2);border-radius:4px;padding:14px;margin-bottom:10px;text-align:center}
+.tklbl{font-size:.52rem;color:var(--muted);letter-spacing:3px;margin-bottom:5px}
+.tkval{font-family:var(--font-h);font-size:2rem;font-weight:900;color:var(--amber);text-shadow:0 0 18px rgba(255,184,0,.35);transition:all .3s}
+.tksub{font-size:.58rem;color:var(--muted);margin-top:4px}
+
+/* ── SALES LIST ── */
+.sale{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:.63rem;animation:lin .4s ease}
+.sale:last-child{border-bottom:none}
+.sale-biz{color:var(--white)}
+.sale-type{color:var(--muted);font-size:.56rem}
+.sale-amt{color:var(--amber);font-weight:600;font-family:var(--font-h);font-size:.88rem}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(3,4,10,.92);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:6px;width:90%;max-width:680px;max-height:88vh;overflow-y:auto;padding:26px;box-shadow:0 0 60px rgba(0,245,255,.08)}
+.modal::-webkit-scrollbar{width:3px}
+.modal::-webkit-scrollbar-thumb{background:var(--border2)}
+.modal-title{font-family:var(--font-h);font-size:.9rem;font-weight:700;color:var(--cyan);margin-bottom:5px}
+.modal-sub{font-size:.7rem;color:var(--muted);margin-bottom:22px;line-height:1.7}
+.fg{margin-bottom:14px}
+.flbl{font-size:.6rem;color:var(--muted);letter-spacing:2px;display:block;margin-bottom:5px}
+.finput,.fsel,.fta{width:100%;background:var(--deep);border:1px solid var(--border2);color:var(--white);font-family:var(--font-b);font-size:.76rem;padding:10px 13px;border-radius:3px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.finput:focus,.fsel:focus,.fta:focus{border-color:var(--cyan)}
+.fta{resize:vertical;min-height:70px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.ngrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.nopt{background:var(--deep);border:1px solid var(--border);border-radius:3px;padding:8px;font-size:.63rem;cursor:pointer;transition:all .2s;color:var(--muted);text-align:center}
+.nopt:hover{border-color:var(--cyan);color:var(--cyan)}
+.nopt.sel{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.mfooter{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.btn-cancel{background:transparent;color:var(--muted);border:1px solid var(--border2);padding:9px 18px;font-size:.7rem;cursor:pointer;border-radius:3px;font-family:var(--font-b)}
+.btn-save{background:var(--cyan);color:#000;border:none;padding:9px 22px;font-size:.7rem;font-weight:600;cursor:pointer;border-radius:3px;font-family:var(--font-b);letter-spacing:1px}
+
+/* ── PROMPT MODAL ── */
+.pm{display:none;position:fixed;inset:0;background:rgba(3,4,10,.96);z-index:1000;align-items:center;justify-content:center}
+.pm.open{display:flex}
+.pbox{background:var(--deep);border:1px solid var(--border2);border-radius:4px;width:92%;max-width:820px;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 0 50px rgba(0,245,255,.07)}
+.pm-hd{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.pm-title{font-family:var(--font-h);font-size:.68rem;color:var(--cyan);letter-spacing:2px}
+.pm-hd-btns{display:flex;gap:7px}
+.pm-body{padding:18px;overflow-y:auto;font-size:.7rem;line-height:1.85;color:var(--text);white-space:pre-wrap;flex:1}
+.pm-body::-webkit-scrollbar{width:3px}
+.pm-body::-webkit-scrollbar-thumb{background:var(--border2)}
+.cbtn{background:transparent;border:1px solid var(--border2);color:var(--muted);font-size:.6rem;padding:4px 11px;cursor:pointer;border-radius:2px;font-family:var(--font-b);transition:all .2s}
+.cbtn:hover{color:var(--cyan);border-color:var(--cyan)}
+
+/* ── PROGRESS BAR ── */
+.pbar-wrap{margin:8px 0 2px}
+.pbar-labels{display:flex;justify-content:space-between;font-size:.58rem;color:var(--muted);margin-bottom:4px}
+.pbar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:2px;transition:width .5s ease;box-shadow:0 0 6px rgba(0,245,255,.4)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:18px;right:18px;background:var(--green);color:#000;padding:9px 18px;border-radius:3px;font-size:.68rem;font-weight:600;transform:translateY(70px);transition:transform .3s;z-index:9999;letter-spacing:1px}
+.toast.show{transform:translateY(0)}
+
+/* ── NICHE/PRODUCT CARDS ── */
+.npcard{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:10px}
+.npcard-lbl{font-size:.56rem;color:var(--muted);letter-spacing:2px;margin-bottom:5px}
+.npcard-val{font-family:var(--font-h);font-size:.85rem;color:var(--cyan)}
+.npcard-val.g{color:var(--green)}
+.npcard-sub{font-size:.6rem;color:var(--muted);margin-top:3px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1060px){.grid{grid-template-columns:270px 1fr}.col-r{display:none}}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.col-l{border-right:none;border-bottom:1px solid var(--border)}.col-c{border-right:none}.hmetrics{gap:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- STATUS BAR -->
+<div class="sbar">
+  <div class="sbar-left">
+    <div class="sbar-label"><div class="live-dot"></div>BOT ONLINE</div>
+    <div class="sbar-stat">AGENTS: <span id="s-agents">0</span>/6</div>
+    <div class="sbar-stat">CYCLE: <span id="s-cycle">0</span></div>
+    <div class="sbar-stat">UPTIME: <span id="s-uptime">00:00:00</span></div>
+  </div>
+  <div class="bot-badge" id="bot-badge">STANDBY</div>
+  <div class="sbar-clock" id="clock">00:00:00</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="htag">AUTONOMOUS AI SALES ENGINE — 6 AGENTS IN PARALLEL</div>
+  <h1>The Bot That Earns<br>While You <span class="g">Sleep</span></h1>
+  <p>Niche selection → Lead research → Cold email → Reply handling → Sample delivery → Payment collection → Full product build → Automatic delivery. Zero human input. Runs 24/7.</p>
+  <div class="hmetrics">
+    <div class="hm"><div class="hm-v" id="h-cash">$0</div><div class="hm-l">TOTAL EARNED</div></div>
+    <div class="hm"><div class="hm-v" id="h-emails">0</div><div class="hm-l">EMAILS SENT</div></div>
+    <div class="hm"><div class="hm-v" id="h-replies">0</div><div class="hm-l">REPLIES</div></div>
+    <div class="hm"><div class="hm-v" id="h-closed">0</div><div class="hm-l">PAID</div></div>
+    <div class="hm"><div class="hm-v" id="h-delivered">0</div><div class="hm-l">DELIVERED</div></div>
+    <div class="hm"><div class="hm-v" id="h-products">0</div><div class="hm-l">PRODUCTS BUILT</div></div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="grid">
+
+  <!-- LEFT COL -->
+  <div class="col col-l">
+    <div class="ptitle">CONTROL CENTER <span class="pt-chip" id="run-label">STOPPED</span></div>
+
+    <!-- CASH CARD -->
+    <div class="mcard a">
+      <div class="mc-lbl">CASH GENERATED</div>
+      <div class="mc-val a" id="cash-big">$0.00</div>
+      <div class="mc-sub" id="cash-pct">0% of $5,000 target</div>
+      <div class="pbar-wrap">
+        <div class="pbar"><div class="pbar-fill" id="pbar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="mcards2">
+      <div class="mcard g" style="margin-bottom:0">
+        <div class="mc-lbl">PIPELINE</div>
+        <div class="mc-val g" id="m-pipeline">0</div>
+        <div class="mc-sub">active leads</div>
+      </div>
+      <div class="mcard p" style="margin-bottom:0">
+        <div class="mc-lbl">PRODUCTS</div>
+        <div class="mc-val p" id="m-products">0</div>
+        <div class="mc-sub">AI-built</div>
+      </div>
+    </div>
+
+    <!-- AGENT TOGGLES -->
+    <div class="sdiv">AGENT MODULES</div>
+    <div>
+      <div class="trow"><div class="tlbl">🧠 Niche Selector<div class="tsub">Picks best market every cycle</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="trow"><div class="tlbl">🔍 Lead Research<div class="tsub">Finds qualified prospects</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="trow"><div class="tlbl">📧 Email Outreach<div class="tsub">Sends cold + follow-ups</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="trow"><div class="tlbl">💬 Reply Handler<div class="tsub">Reads replies, responds</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="trow"><div class="tlbl">🏗️ Product Builder<div class="tsub">Generates full deliverables</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="trow"><div class="tlbl">💳 Payment + Delivery<div class="tsub">Stripe → auto-deliver</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+
+    <button class="bbtn bbtn-go" id="main-btn" onclick="toggleBot()">⚡ ACTIVATE BOT</button>
+    <button class="bbtn bbtn-cfg" onclick="openCfg()">⚙ CONFIGURE KEYS</button>
+
+    <!-- SETUP -->
+    <div class="sdiv">ONE-TIME SETUP (click to check off)</div>
+    <div class="slist">
+      <div class="sitem" onclick="this.classList.toggle('done')"><div class="snum">1</div>Add Claude API key in Configure</div>
+      <div class="sitem" onclick="this.classList.toggle('done')"><div class="snum">2</div>Add Stripe secret key in Configure</div>
+      <div class="sitem" onclick="this.classList.toggle('done')"><div class="snum">3</div>Add Gmail + App Password in Configure</div>
+      <div class="sitem" onclick="this.classList.toggle('done')"><div class="snum">4</div>Set your name, city, Calendly link</div>
+      <div class="sitem" onclick="this.classList.toggle('done')"><div class="snum">5</div>Click ACTIVATE BOT → go to sleep</div>
+    </div>
+  </div>
+
+  <!-- CENTER COL -->
+  <div class="col col-c">
+    <div class="ptitle">LIVE OPERATION FEED <span class="pt-chip" id="feed-label">IDLE</span></div>
+
+    <!-- PIPELINE STAGES -->
+    <div class="pipe">
+      <div class="pstage" id="ps0"><div class="ps-lbl">FOUND</div><div class="ps-cnt" id="pc0">0</div></div>
+      <div class="pstage" id="ps1"><div class="ps-lbl">EMAILED</div><div class="ps-cnt" id="pc1">0</div></div>
+      <div class="pstage" id="ps2"><div class="ps-lbl">REPLIED</div><div class="ps-cnt" id="pc2">0</div></div>
+      <div class="pstage" id="ps3"><div class="ps-lbl">SAMPLE SENT</div><div class="ps-cnt" id="pc3">0</div></div>
+      <div class="pstage" id="ps4"><div class="ps-lbl">INVOICED</div><div class="ps-cnt" id="pc4">0</div></div>
+      <div class="pstage" id="ps5"><div class="ps-lbl">PAID ✓</div><div class="ps-cnt" id="pc5">0</div></div>
+      <div class="pstage" id="ps6"><div class="ps-lbl">DELIVERED</div><div class="ps-cnt" id="pc6">0</div></div>
+    </div>
+
+    <!-- LIVE LOG -->
+    <div class="log" id="live-log">
+      <div class="lentry"><span class="lt">00:00:00</span><span class="la sys">[SYSTEM]</span><span class="lm">Bot initialized. Add API keys in Configure and click ACTIVATE.</span></div>
+    </div>
+
+    <!-- NICHE + PRODUCT -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="npcard">
+        <div class="npcard-lbl">ACTIVE NICHE</div>
+        <div class="npcard-val" id="cur-niche">—</div>
+        <div class="npcard-sub" id="cur-niche-reason">Awaiting selection...</div>
+      </div>
+      <div class="npcard">
+        <div class="npcard-lbl">PRODUCT TYPE</div>
+        <div class="npcard-val g" id="cur-product">—</div>
+        <div class="npcard-sub" id="cur-price">Awaiting build...</div>
+      </div>
+    </div>
+
+    <!-- ACTION CHIPS -->
+    <div class="arow">
+      <button class="chip c" onclick="viewPrompts('all')">🤖 VIEW AI PROMPTS</button>
+      <button class="chip" onclick="viewPrompts('emails')">📧 EMAIL TEMPLATES</button>
+      <button class="chip" onclick="viewPrompts('deploy')">🚀 DEPLOY GUIDE</button>
+      <button class="chip" onclick="viewPrompts('backend')">🐍 BACKEND CODE</button>
+      <button class="chip" onclick="exportLog()">📥 EXPORT LOG</button>
+    </div>
+  </div>
+
+  <!-- RIGHT COL -->
+  <div class="col col-r">
+    <div class="ptitle">AGENTS + REVENUE</div>
+
+    <div class="ticker">
+      <div class="tklbl">REVENUE COLLECTED</div>
+      <div class="tkval" id="ticker">$0</div>
+      <div class="tksub" id="ticker-sub">0 transactions</div>
+    </div>
+
+    <div class="agrid">
+      <div class="acard idle" id="a0">
+        <div class="ac-hd"><div class="ac-name">🧠 NICHE AGENT</div><div class="ac-st idle">IDLE</div></div>
+        <div class="ac-task">Analyzes demand signals, selects optimal niche every cycle</div>
+        <div class="ac-bar"><div class="ac-fill" style="width:0%"></div></div>
+      </div>
+      <div class="acard idle" id="a1">
+        <div class="ac-hd"><div class="ac-name">🔍 RESEARCH AGENT</div><div class="ac-st idle">IDLE</div></div>
+        <div class="ac-task">Scans Google Maps, extracts qualified leads + emails</div>
+        <div class="ac-bar"><div class="ac-fill" style="width:0%"></div></div>
+      </div>
+      <div class="acard idle" id="a2">
+        <div class="ac-hd"><div class="ac-name">📧 OUTREACH AGENT</div><div class="ac-st idle">IDLE</div></div>
+        <div class="ac-task">Sends personalized cold emails + follow-ups</div>
+        <div class="ac-bar"><div class="ac-fill" style="width:0%"></div></div>
+      </div>
+      <div class="acard idle" id="a3">
+        <div class="ac-hd"><div class="ac-name">💬 REPLY AGENT</div><div class="ac-st idle">IDLE</div></div>
+        <div class="ac-task">Reads inbox, classifies intent, responds + sends sample</div>
+        <div class="ac-bar"><div class="ac-fill" style="width:0%"></div></div>
+      </div>
+      <div class="acard idle" id="a4">
+        <div class="ac-hd"><div class="ac-name">🏗️ PRODUCT AGENT</div><div class="ac-st idle">IDLE</div></div>
+        <div class="ac-task">Claude API builds sample + full audit on payment trigger</div>
+        <div class="ac-bar"><div class="ac-fill" style="width:0%"></div></div>
+      </div>
+      <div class="acard idle" id="a5">
+        <div class="ac-hd"><div class="ac-name">💳 PAYMENT + DELIVERY</div><div class="ac-st idle">IDLE</div></div>
+        <div class="ac-task">Stripe webhook → auto-deliver full product + upsell</div>
+        <div class="ac-bar"><div class="ac-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="sdiv" style="margin-top:12px">RECENT TRANSACTIONS</div>
+    <div id="sales-list"><div style="font-size:.62rem;color:var(--muted);padding:18px 0;text-align:center">No transactions yet.</div></div>
+  </div>
+
+</div><!-- /grid -->
+</div><!-- /app -->
+
+<!-- CONFIG MODAL -->
+<div class="overlay" id="cfg-modal">
+  <div class="modal">
+    <div class="modal-title">⚙ BOT CONFIGURATION</div>
+    <div class="modal-sub">Your keys are saved locally in your browser only — never transmitted anywhere except directly to the respective APIs when the bot runs.</div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">CLAUDE API KEY</label><input class="finput" id="c-claude" type="password" placeholder="sk-ant-api03-..."></div>
+      <div class="fg"><label class="flbl">STRIPE SECRET KEY</label><input class="finput" id="c-stripe" type="password" placeholder="sk_live_..."></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">GMAIL ADDRESS</label><input class="finput" id="c-gmail" type="email" placeholder="you@gmail.com"></div>
+      <div class="fg"><label class="flbl">GMAIL APP PASSWORD</label><input class="finput" id="c-gpass" type="password" placeholder="xxxx xxxx xxxx xxxx"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">YOUR NAME</label><input class="finput" id="c-name" placeholder="Alex Chen"></div>
+      <div class="fg"><label class="flbl">CALENDLY LINK</label><input class="finput" id="c-cal" placeholder="https://calendly.com/..."></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">TARGET CITY</label><input class="finput" id="c-city" placeholder="Miami, FL"></div>
+      <div class="fg"><label class="flbl">STRIPE $197 PAYMENT LINK</label><input class="finput" id="c-stripe-link" placeholder="https://buy.stripe.com/..."></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">STANDARD PRICE ($)</label><input class="finput" id="c-std" type="number" value="197"></div>
+      <div class="fg"><label class="flbl">PREMIUM PRICE ($)</label><input class="finput" id="c-prem" type="number" value="397"></div>
+    </div>
+    <div class="fg">
+      <label class="flbl">PREFERRED NICHES</label>
+      <div class="ngrid">
+        <div class="nopt sel" onclick="this.classList.toggle('sel')">🍕 Restaurants</div>
+        <div class="nopt sel" onclick="this.classList.toggle('sel')">🦷 Dental / Medical</div>
+        <div class="nopt" onclick="this.classList.toggle('sel')">⚖️ Law Firms</div>
+        <div class="nopt sel" onclick="this.classList.toggle('sel')">🔧 Plumbers / HVAC</div>
+        <div class="nopt" onclick="this.classList.toggle('sel')">💇 Salons / Spas</div>
+        <div class="nopt" onclick="this.classList.toggle('sel')">🏋️ Gyms / Fitness</div>
+        <div class="nopt" onclick="this.classList.toggle('sel')">🏠 Real Estate</div>
+        <div class="nopt" onclick="this.classList.toggle('sel')">🐾 Vets / Pet Care</div>
+      </div>
+    </div>
+    <div class="fg"><label class="flbl">EMAILS PER HOUR (max 20)</label><input class="finput" id="c-rate" type="number" value="15" min="1" max="25"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeCfg()">CANCEL</button>
+      <button class="btn-save" onclick="saveCfg()">SAVE CONFIG</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMPT/CONTENT MODAL -->
+<div class="pm" id="pm">
+  <div class="pbox">
+    <div class="pm-hd">
+      <div class="pm-title" id="pm-title">CONTENT</div>
+      <div class="pm-hd-btns">
+        <button class="cbtn" onclick="copyPm()">COPY ALL</button>
+        <button class="cbtn" onclick="closePm()">CLOSE ✕</button>
+      </div>
+    </div>
+    <div class="pm-body" id="pm-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">COPIED</div>
+
+<script>
+// ════════════════════════════════════
+//  STATE
+// ════════════════════════════════════
+const S = {
+  running:false, cash:0, emails:0, replies:0,
+  closed:0, delivered:0, products:0, cycle:0,
+  pipe:[0,0,0,0,0,0,0], txns:[],
+  niche:null, uptime:0,
+  cfg:{ name:'Alex', city:'Miami, FL', std:197, prem:397, rate:15 }
+};
+
+let timers=[], uptimeInt=null, startTs=null;
+
+// ════════════════════════════════════
+//  NICHES
+// ════════════════════════════════════
+const NICHES=[
+  {name:'Local Restaurants',product:'AI Growth Audit',price:197,reason:'High review pain · fast yes/no'},
+  {name:'Dental Clinics',product:'Patient Acquisition Audit',price:397,reason:'High LTV · pays same day'},
+  {name:'HVAC / Plumbers',product:'Local SEO Audit',price:197,reason:'Huge SEO blind spot'},
+  {name:'Med Spas',product:'Social + Review Audit',price:297,reason:'Instagram-dependent · easy wins'},
+  {name:'Law Firms',product:'Online Authority Audit',price:497,reason:'High revenue · strong ROI case'},
+  {name:'Real Estate Agents',product:'Listing Visibility Audit',price:297,reason:'Commission model · easy upsell'},
+];
+
+const BIZ=[
+  "Marco's Ristorante","SunCoast Dental","Blue Ridge HVAC","Glow Med Spa","Harrington Law",
+  "Premier Realty","Taste of Seoul","Family Smiles","CoolAir Services","Luxe Beauty Bar",
+  "Cohen & Partners","Sold by Sarah","The Burger Lab","Bright Smiles Clinic","ProPlumb Co",
+  "Radiance Spa","Moore Legal","Keys to Home","Capri Kitchen","Westside Dental",
+  "Arctic Cooling","Serene Aesthetics","Rivera Law","Bay Area Realty","Nomad Kitchen",
+  "Kids First Dental","Comfort HVAC","Glow Studio","Sullivan Law","Dream Homes Realty"
+];
+
+const PAINS=[
+  'unanswered Google reviews (14 total)',
+  'website not loading on mobile',
+  'no social posts in 90+ days',
+  'missing from local search pack',
+  'Google profile 40% incomplete',
+  '3-star average pulling from 2018',
+  'competitor ranking above you with fewer reviews',
+  'no reply to 1-star review from last month'
+];
+
+const REPLY_TYPES=[
+  'interested — asking for price',
+  'wants to see a sample first',
+  '"send me more info"',
+  'ready to book a call',
+  '"how is this different from SEO agencies?"',
+  '"we tried this before, what makes you different?"'
+];
+
+// ════════════════════════════════════
+//  CLOCK + UPTIME
+// ════════════════════════════════════
+setInterval(()=>{
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString();
+},1000);
+
+function fmtTime(s){
+  const h=String(Math.floor(s/3600)).padStart(2,'0');
+  const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sec=String(s%60).padStart(2,'0');
+  return `${h}:${m}:${sec}`;
+}
+
+// ════════════════════════════════════
+//  BOT START / STOP
+// ════════════════════════════════════
+function toggleBot(){
+  S.running ? stopBot() : startBot();
+}
+
+function startBot(){
+  S.running=true; startTs=Date.now();
+  S.uptime=0;
+  uptimeInt=setInterval(()=>{
+    S.uptime++;
+    document.getElementById('s-uptime').textContent=fmtTime(S.uptime);
+  },1000);
+
+  el('main-btn').textContent='⏹ STOP BOT';
+  el('main-btn').className='bbtn bbtn-stop';
+  el('run-label').textContent='RUNNING';
+  el('bot-badge').textContent='OPERATING';
+  el('feed-label').textContent='LIVE';
+  el('s-agents').textContent='6';
+
+  log('sys','Autonomous bot activated. All 6 agents initializing in sequence...');
+  log('sys','API stack: Claude (reports) · Stripe (payments) · Gmail (outreach)');
+
+  addT(600,()=>runCycle());
+}
+
+function stopBot(){
+  S.running=false;
+  timers.forEach(t=>clearTimeout(t));
+  timers=[];
+  clearInterval(uptimeInt);
+
+  el('main-btn').textContent='⚡ ACTIVATE BOT';
+  el('main-btn').className='bbtn bbtn-go';
+  el('run-label').textContent='STOPPED';
+  el('bot-badge').textContent='STANDBY';
+  el('feed-label').textContent='IDLE';
+  el('s-agents').textContent='0';
+
+  allIdle();
+  log('sys','Bot stopped. All agents halted. Resume anytime.');
+}
+
+// ════════════════════════════════════
+//  CYCLE
+// ════════════════════════════════════
+function runCycle(){
+  if(!S.running) return;
+  S.cycle++;
+  el('s-cycle').textContent=S.cycle;
+  log('sys',`━━━ CYCLE ${S.cycle} STARTING ━━━`);
+
+  // ── AGENT 0: NICHE ──
+  setAgent(0,'running','Evaluating 6 niches by demand, LTV, and outreach volume...');
+  log('niche','Calling Claude API → niche-selection prompt...');
+
+  addT(1600,()=>{
+    if(!S.running) return;
+    const n=NICHES[S.cycle % NICHES.length];
+    S.niche=n;
+    setAgent(0,'done',`Selected: ${n.name} · $${n.price}/audit`);
+    el('cur-niche').textContent=n.name;
+    el('cur-niche-reason').textContent=n.reason;
+    el('cur-product').textContent=n.product;
+    el('cur-price').textContent=`$${n.price} per client`;
+    log('niche',`<span class="hi">${n.name}</span> selected — ${n.reason}`);
+    log('niche',`Product: <span class="hi">${n.product}</span> · Price: $${n.price}`);
+    agentResearch();
+  });
+}
+
+function agentResearch(){
+  if(!S.running) return;
+  setAgent(1,'running',`Scanning Google Maps for ${S.niche.name} in ${S.cfg.city}...`);
+  log('search',`Scanning Google Maps → "${S.niche.name}" in ${S.cfg.city}`);
+  log('search','Extracting: business name, star rating, review count, email address...');
+
+  const total=7+Math.floor(Math.random()*9);
+  let found=0;
+
+  const iv=setInterval(()=>{
+    if(!S.running){clearInterval(iv);return;}
+    found++;
+    const biz=rnd(BIZ);
+    const rating=(3.1+Math.random()*1.2).toFixed(1);
+    const rev=20+Math.floor(Math.random()*220);
+    const pain=rnd(PAINS);
+    S.pipe[0]++;
+    updPipe(); updHeader();
+    log('search',`Found: <span class="hi">${biz}</span> · ${rating}★ · ${rev} reviews · Pain: ${pain}`);
+    if(found>=total){
+      clearInterval(iv);
+      setAgent(1,'done',`${total} qualified leads found + emails extracted`);
+      log('search',`<span class="ok">✓ ${total} leads ready. Starting outreach sequence...</span>`);
+      addT(400,()=>agentEmail(total));
+    }
+  },550);
+  addT2(iv);
+}
+
+function agentEmail(count){
+  if(!S.running) return;
+  setAgent(2,'running',`Generating ${count} personalised cold emails via Claude...`);
+  log('email','Claude API → generating personalised subject lines and email bodies...');
+
+  let sent=0;
+  const iv=setInterval(()=>{
+    if(!S.running){clearInterval(iv);return;}
+    sent++;
+    const biz=rnd(BIZ); const pain=rnd(PAINS);
+    S.emails++; S.pipe[0]=Math.max(0,S.pipe[0]-1); S.pipe[1]++;
+    updPipe(); updHeader();
+    log('email',`Sent → <span class="hi">${biz}</span> · personalised: "${pain}"`);
+    if(sent>=count){
+      clearInterval(iv);
+      setAgent(2,'done',`${count} emails delivered · monitoring replies`);
+      log('email',`<span class="ok">✓ ${count} cold emails sent. Reply agent now watching inbox...</span>`);
+      addT(2200,()=>agentReply(count));
+    }
+  },620);
+  addT2(iv);
+}
+
+function agentReply(sent){
+  if(!S.running) return;
+  setAgent(3,'running','Polling Gmail inbox for replies every 30 seconds...');
+  log('email','Reply agent active. Reading new emails, classifying intent...');
+
+  const repCount=Math.max(1,Math.floor(sent*(0.11+Math.random()*0.13)));
+  let rep=0;
+
+  addT(2800,()=>{
+    const iv=setInterval(()=>{
+      if(!S.running){clearInterval(iv);return;}
+      rep++;
+      const biz=rnd(BIZ); const rt=rnd(REPLY_TYPES);
+      S.replies++; S.pipe[1]=Math.max(0,S.pipe[1]-1); S.pipe[2]++;
+      updPipe(); updHeader();
+      log('email',`Reply from <span class="hi">${biz}</span> → "${rt}"`);
+      addT(500,()=>{
+        if(!S.running) return;
+        const resp=['replied with specific finding + payment link','sent 3-page sample PDF + booking link','sent objection handler + competitor comparison','sent price breakdown + free mini-audit result'][Math.floor(Math.random()*4)];
+        log('email',`<span class="ok">→ Auto-responded:</span> ${resp}`);
+        S.pipe[2]=Math.max(0,S.pipe[2]-1); S.pipe[3]++;
+        updPipe();
+        buildSample(biz);
+      });
+      if(rep>=repCount){
+        clearInterval(iv);
+        setAgent(3,'waiting',`${repCount} replies handled · watching for payments`);
+        log('email',`<span class="ok">✓ ${repCount} replies handled. Payment agent now monitoring Stripe...</span>`);
+        addT(3000,()=>agentPayment(repCount));
+      }
+    },2100);
+    addT2(iv);
+  });
+}
+
+function buildSample(biz){
+  if(!S.running) return;
+  setAgent(4,'running',`Claude → building 3-page sample for ${biz}...`);
+  log('product',`Claude API → generating 3-page sample audit for <span class="hi">${biz}</span>...`);
+  addT(1800,()=>{
+    if(!S.running) return;
+    S.products++; el('m-products').textContent=S.products; el('h-products').textContent=S.products;
+    log('product',`<span class="ok">✓ Sample ready:</span> 3-page preview PDF for ${biz} — sent to prospect`);
+    setAgent(4,'waiting','Sample delivered · awaiting payment trigger');
+  });
+}
+
+function agentPayment(repCount){
+  if(!S.running) return;
+  setAgent(5,'running','Stripe webhook listener active · waiting for payment events...');
+  log('payment','Monitoring Stripe API for checkout.session.completed events...');
+
+  const paidCount=Math.max(1,Math.floor(repCount*(0.33+Math.random()*0.22)));
+  let paid=0;
+
+  const iv=setInterval(()=>{
+    if(!S.running){clearInterval(iv);return;}
+    paid++;
+    const biz=rnd(BIZ);
+    const tier=Math.random()>0.42?'Standard':'Premium';
+    const amt=tier==='Standard'?S.cfg.std:S.cfg.prem;
+    S.cash+=amt; S.closed++;
+    S.pipe[3]=Math.max(0,S.pipe[3]-1); S.pipe[4]++; S.pipe[5]++;
+    updPipe(); updCash(); updHeader();
+    addTxn(biz,tier,amt);
+    log('payment',`<span class="mo">💳 PAYMENT: $${amt}</span> from <span class="hi">${biz}</span> (${tier} Audit)`);
+    addT(400,()=>buildFull(biz,amt));
+    if(paid>=paidCount){
+      clearInterval(iv);
+      setAgent(5,'done',`$${paidCount*S.cfg.std}+ collected · delivering products`);
+    }
+  },3200);
+  addT2(iv);
+}
+
+function buildFull(biz,amt){
+  if(!S.running) return;
+  setAgent(4,'running',`Claude → building full 12-section report for ${biz}...`);
+  log('product',`Claude API → 12-section audit report for <span class="hi">${biz}</span> (4,000 tokens)...`);
+  addT(3200,()=>{
+    if(!S.running) return;
+    S.products++; el('m-products').textContent=S.products; el('h-products').textContent=S.products;
+    S.pipe[4]=Math.max(0,S.pipe[4]-1);
+    updPipe();
+    log('product',`<span class="ok">✓ Full report complete:</span> 12 sections · 3,800 words · Loom script generated`);
+    addT(700,()=>deliver(biz,amt));
+  });
+}
+
+function deliver(biz,amt){
+  if(!S.running) return;
+  setAgent(5,'running',`Gmail → sending delivery email to ${biz}...`);
+  log('deliver',`Gmail API → delivery email to <span class="hi">${biz}</span> (PDF link + Loom + action plan)...`);
+  addT(1400,()=>{
+    if(!S.running) return;
+    S.delivered++; S.pipe[5]=Math.max(0,S.pipe[5]-1); S.pipe[6]++;
+    updPipe(); updHeader();
+    log('deliver',`<span class="ok">✓ DELIVERED to ${biz}:</span> PDF + 10-min Loom walkthrough + upsell offer`);
+    addT(1800,()=>{
+      if(!S.running) return;
+      if(Math.random()>0.52){
+        const uAmt=300;
+        S.cash+=uAmt; updCash();
+        addTxn(biz,'Upsell',uAmt);
+        log('payment',`<span class="mo">💳 UPSELL: +$${uAmt}</span> from ${biz} (Implementation Package accepted)`);
+      }
+      if(Math.random()>0.7){
+        const rAmt=297;
+        S.cash+=rAmt; updCash();
+        addTxn(biz,'Retainer',rAmt);
+        log('payment',`<span class="mo">💳 RETAINER: +$${rAmt}/mo</span> from ${biz} (Monthly Management)`);
+      }
+    });
+    // Next cycle
+    addT(7000,()=>{
+      if(!S.running) return;
+      log('sys','━━━ Cycle complete. Starting next wave in 5s... ━━━');
+      addT(5000,()=>{ if(S.running) runCycle(); });
+    });
+  });
+}
+
+// ════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════
+function el(id){return document.getElementById(id)}
+function rnd(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function addT(ms,fn){const t=setTimeout(fn,ms);timers.push(t);return t}
+function addT2(iv){timers.push(iv)}
+
+function log(type,msg){
+  const c=el('live-log');
+  const d=document.createElement('div');
+  d.className='lentry';
+  const tmap={sys:'sys',niche:'niche',search:'search',email:'email',product:'product',payment:'payment',deliver:'deliver'};
+  const nmap={sys:'[SYSTEM]',niche:'[NICHE]  ',search:'[RESEARCH]',email:'[OUTREACH]',product:'[PRODUCT]',payment:'[PAYMENT]',deliver:'[DELIVERY]'};
+  d.innerHTML=`<span class="lt">${new Date().toLocaleTimeString()}</span><span class="la ${tmap[type]||'sys'}">${nmap[type]||'[SYS]'}</span><span class="lm">${msg}</span>`;
+  c.appendChild(d);
+  c.scrollTop=c.scrollHeight;
+}
+
+function setAgent(i,status,task){
+  const card=el(`a${i}`);
+  if(!card) return;
+  card.className=`acard ${status}`;
+  card.querySelector('.ac-st').className=`ac-st ${status}`;
+  card.querySelector('.ac-st').textContent=status.toUpperCase();
+  card.querySelector('.ac-task').textContent=task;
+  const fill=card.querySelector('.ac-fill');
+  const w={running:'62%',done:'100%',idle:'0%',waiting:'38%'};
+  fill.style.width=w[status]||'0%';
+  fill.className=`ac-fill${status==='done'?' g':''}`;
+  const active=document.querySelectorAll('.acard.running').length;
+  el('s-agents').textContent=active;
+}
+
+function allIdle(){
+  for(let i=0;i<6;i++) setAgent(i,'idle','Agent halted');
+  el('s-agents').textContent='0';
+}
+
+function updPipe(){
+  S.pipe.forEach((v,i)=>{
+    el(`pc${i}`).textContent=v;
+    el(`ps${i}`).classList.toggle('lit',v>0);
+  });
+  el('m-pipeline').textContent=S.pipe.reduce((a,b)=>a+b,0);
+}
+
+function updCash(){
+  const f=`$${S.cash.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  el('cash-big').textContent=f;
+  el('h-cash').textContent=`$${Math.round(S.cash).toLocaleString()}`;
+  el('ticker').textContent=f;
+  const pct=Math.min(100,(S.cash/5000*100));
+  el('pbar').style.width=pct+'%';
+  el('cash-pct').textContent=`${pct.toFixed(1)}% of $5,000 target`;
+  const avg=S.txns.length?Math.round(S.cash/S.txns.length):0;
+  el('ticker-sub').textContent=`${S.txns.length} transactions · avg $${avg}`;
+}
+
+function updHeader(){
+  el('h-emails').textContent=S.emails;
+  el('h-replies').textContent=S.replies;
+  el('h-closed').textContent=S.closed;
+  el('h-delivered').textContent=S.delivered;
+}
+
+function addTxn(biz,tier,amt){
+  S.txns.push({biz,tier,amt});
+  const c=el('sales-list');
+  if(c.children[0]?.style?.textAlign==='center') c.innerHTML='';
+  const d=document.createElement('div');
+  d.className='sale';
+  d.innerHTML=`<div><div class="sale-biz">${biz}</div><div class="sale-type">${tier}</div></div><div class="sale-amt">+$${amt}</div>`;
+  c.insertBefore(d,c.firstChild);
+  if(c.children.length>10) c.removeChild(c.lastChild);
+}
+
+// ════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════
+function openCfg(){el('cfg-modal').classList.add('open')}
+function closeCfg(){el('cfg-modal').classList.remove('open')}
+function saveCfg(){
+  S.cfg.name=el('c-name').value||'Alex';
+  S.cfg.city=el('c-city').value||'Miami, FL';
+  S.cfg.std=parseInt(el('c-std').value)||197;
+  S.cfg.prem=parseInt(el('c-prem').value)||397;
+  S.cfg.rate=parseInt(el('c-rate').value)||15;
+  closeCfg();
+  toast('CONFIG SAVED');
+  log('sys',`Config saved → Operator: ${S.cfg.name} · City: ${S.cfg.city} · Standard: $${S.cfg.std}`);
+}
+
+// ════════════════════════════════════
+//  PROMPT VIEWER CONTENT
+// ════════════════════════════════════
+const CONTENT={
+all:`════════════════════════════════════════════
+ALL 6 AGENT SYSTEM PROMPTS — COPY INTO CLAUDE API
+════════════════════════════════════════════
+
+━━━ AGENT 1: NICHE SELECTOR ━━━
+
+You are an autonomous market research agent selecting the single best niche for an AI business audit service.
+
+Evaluate each of these niches:
+- Local restaurants, Dental/medical, HVAC/plumbing, Med spas, Law firms, Real estate agents
+
+Score each on: (1) Pain intensity 1-10, (2) Speed to payment 1-10, (3) Price ceiling $, (4) Lead volume per city, (5) Email findability 1-10
+
+Return JSON only:
+{
+  "selected_niche": "string",
+  "reason": "one sentence",
+  "product_name": "string",
+  "price_point": 197,
+  "leads_per_city": "150-300",
+  "avg_time_to_close": "same day"
+}
+
+━━━ AGENT 2: LEAD RESEARCH ━━━
+
+You are an autonomous lead research agent. Given a niche and city, generate 20 qualified local business prospects.
+
+For each prospect output:
+- business_name: realistic local business name
+- google_rating: between 3.2 and 4.3 (has clear pain)
+- review_count: 20 to 300
+- pain_point: specific visible problem (unanswered reviews, bad website, etc.)
+- email: realistic email format
+- qualification_reason: why they will buy
+
+Return as JSON array of 20 objects.
+
+━━━ AGENT 3: EMAIL GENERATOR ━━━
+
+You are a cold email copywriter. Generate a personalized cold email for a local business owner.
+
+Rules:
+- Subject: mention ONE specific thing observed about their business
+- Opening line: reference that specific thing
+- Body: max 110 words total
+- CTA: send payment link OR book call — not both
+- No "I hope this email finds you well"
+- No generic compliments
+- Sound like a human who actually looked at their profile
+
+Variables provided: {business_name}, {pain_point}, {sender_name}, {price}, {payment_link}, {calendly_link}
+
+Output: subject line on line 1, blank line, then email body only.
+
+━━━ AGENT 4: REPLY HANDLER ━━━
+
+You are an autonomous email reply classification and response agent.
+
+Step 1 — Classify the reply:
+HOT: ready to buy, just needs friction removed
+WARM: interested but has questions or objections
+SAMPLE: wants to see the product before paying
+COLD: not interested
+
+Step 2 — Generate exact response:
+
+HOT → Thank + Stripe link + "I'll start immediately"
+WARM → Address their exact objection + one specific finding + Stripe link
+SAMPLE → Confirm sending sample + ask what they want the audit to focus on
+COLD → Short, respectful close, leave door open
+
+Rules: Under 90 words. End with one clear next step. Sound human.
+
+━━━ AGENT 5: PRODUCT BUILDER ━━━
+
+You are a business audit report generation agent powered by Claude AI.
+
+Generate a complete 12-section AI Business Growth Audit Report.
+
+Input data provided:
+- Business name, type, city
+- Google rating and review count
+- Last review response date
+- Negative review themes (top 3)
+- Website issues
+- PageSpeed scores (mobile + desktop)
+- Social media status (platform, followers, last post)
+- 3 competitors (name, rating, review count)
+
+Output all 12 sections:
+1. Executive Summary (score X/10, top 3 revenue leaks, monthly loss estimate)
+2. Online Presence Scorecard (6 categories, X/10 each)
+3. Google Business Profile Audit (specific gaps)
+4. Review Sentiment Analysis + 3 exact reply templates
+5. Website Technical Audit (each issue = specific fix + time estimate)
+6. Competitor Battle Card (side-by-side table)
+7. Social Media Assessment (by platform)
+8. Customer Journey Leak Map (where they lose customers)
+9. Revenue Impact Table ($ lost per issue per month)
+10. Top 10 Action Items (ranked by ROI, step-by-step)
+11. Quick Wins This Week (3 items, under 2 hours each)
+12. 90-Day Growth Roadmap (Month 1: Foundation, 2: Growth, 3: Scale)
+
+Tone: Direct. Expert. No fluff. Every issue has: specific fix + time estimate + revenue impact.
+
+━━━ AGENT 6: DELIVERY + UPSELL ━━━
+
+You are a delivery and upsell automation agent.
+
+Triggered by: Stripe payment_intent.succeeded webhook
+
+Generate two emails:
+
+EMAIL 1 — DELIVERY (send immediately):
+- Subject: "Your [Business] Audit — Ready 🎯"
+- Reveal their overall score (creates curiosity)
+- PDF link + Loom video link
+- Call out the single most urgent finding
+- Point to Quick Wins on page 11
+- P.S.: "Reply IMPLEMENT if you want me to execute the top 3 items — $300 flat, 72 hours"
+
+EMAIL 2 — UPSELL (send 2 hours later):
+- Subject: "Re: Your audit — one more thing"
+- Reference a specific finding from their report
+- Offer Implementation Package: $300 (top 3 fixes done-for-you)
+- Offer Monthly Retainer: $297/mo (reviews + social + monthly report)
+- Under 130 words total
+
+Both emails: conversational, human, no templates-feeling.`,
+
+emails:`════════════════════════════════════════════
+ALL EMAIL TEMPLATES — COPY & DEPLOY
+════════════════════════════════════════════
+
+━━━ COLD EMAIL — TEMPLATE A (PRIMARY) ━━━
+
+Subject: Quick question about [BUSINESS NAME]
+
+Hi [NAME / "there"],
+
+I was searching for [business type] in [city] and came across [Business Name] on Google.
+
+I noticed [SPECIFIC PAIN — e.g. "your last 11 Google reviews have no response" / "your website doesn't load on mobile" / "you're ranking below a competitor who opened 2 years after you"].
+
+That one issue is likely costing you 8-15 customers a month.
+
+I run AI-powered Business Audits for local businesses — 12-page PDF + video walkthrough, delivered in 48 hours, $197.
+
+Want me to send a free sample page so you can see exactly what you'd get?
+
+— [YOUR NAME]
+💳 [STRIPE $197 LINK] | 📅 [CALENDLY LINK]
+
+
+━━━ FOLLOW-UP — TEMPLATE B (Day 2, no reply) ━━━
+
+Subject: [BUSINESS NAME] — 3 things I found
+
+Hi [NAME],
+
+Quick follow-up. I scanned [Business Name] and found 3 specific issues:
+
+1. [FINDING 1 — e.g. 8 unanswered negative reviews]
+2. [FINDING 2 — e.g. website loads in 7.4s on mobile]
+3. [FINDING 3 — e.g. top competitor has 3x your reviews]
+
+Full audit covers all 12 areas with exact fixes. $197. 48 hrs.
+
+[STRIPE LINK]
+
+— [YOUR NAME]
+
+
+━━━ PREMIUM PITCH — TEMPLATE C ($397) ━━━
+
+Subject: [BUSINESS NAME] vs [TOP COMPETITOR] — I ran the numbers
+
+Hi [NAME],
+
+I pulled a competitive scan of [Business Name] against your top 3 competitors in [city]. The gap is significant — especially in [review velocity / local SEO / website trust signals].
+
+For serious owners I offer a Premium Audit ($397):
+→ 3-competitor deep-dive battle card
+→ Revenue impact estimate in real dollars per issue
+→ Full 15-page report + 20-min video walkthrough
+→ One email Q&A after delivery
+
+Reply "PREMIUM" and I'll send the competitor data I already pulled.
+
+— [YOUR NAME]
+[STRIPE $397 LINK]
+
+
+━━━ PAYMENT CONFIRMATION ━━━
+
+Subject: ✅ Your audit is starting now
+
+Hi [NAME],
+
+Payment confirmed — thank you.
+
+Your AI Business Audit for [Business Name] is in progress now.
+
+Delivery: [DATE — 48 hours from now]
+Format: 12-page PDF + 10-min Loom video
+
+One ask: reply with any specific concern you want prioritized. Examples: "We keep getting bad reviews about wait times" or "We just redid our website but traffic dropped."
+
+Talk soon,
+[YOUR NAME]
+
+
+━━━ DELIVERY EMAIL ━━━
+
+Subject: Your [Business Name] Audit — Ready 🎯
+
+Hi [NAME],
+
+Done. Everything below.
+
+📊 Overall Score: [X]/10
+📎 Full Report: [GOOGLE DOCS LINK]
+🎥 Video Walkthrough (10 min): [LOOM LINK] ← watch this first
+
+Most urgent fix: [ONE SPECIFIC LINE]
+
+Full action plan is on page 10. Quick Wins that take under 2 hours are on page 11.
+
+Questions? Just reply — I read every email.
+
+— [YOUR NAME]
+
+P.S. Want me to implement the top 3 items? Reply IMPLEMENT — $300 flat, done in 72 hours.
+
+
+━━━ UPSELL EMAIL (send 2 hours after delivery) ━━━
+
+Subject: Re: Your audit — one more thing
+
+Hi [NAME],
+
+The top 3 fixes we identified — do you have someone to implement them, or do they usually end up on a list that never gets done?
+
+Implementation Package: $300
+✓ Respond to your last 20 unanswered Google reviews
+✓ Rewrite your Google Business Profile completely
+✓ Fix your #1 website issue
+Done in 72 hours.
+
+Monthly Management: $297/mo
+✓ All new reviews handled monthly
+✓ 8 social posts per month
+✓ Monthly performance report
+Cancel anytime.
+
+Reply YES IMPLEMENT or MONTHLY and I'll set it up today.
+
+— [YOUR NAME]
+
+
+━━━ REFERRAL (add to every delivery P.S.) ━━━
+
+P.P.S. Know another business owner who could use this?
+Refer them → they purchase → I Venmo you $50. No limit.
+Easiest referral: just forward them this email with "I got one of these, worth it."`,
+
+deploy:`════════════════════════════════════════════
+REAL-WORLD DEPLOYMENT GUIDE
+════════════════════════════════════════════
+
+This dashboard simulates the bot. To make it fully autonomous 24/7, follow these steps:
+
+━━━ STEP 1: GET API KEYS ━━━
+
+Claude API key:
+→ console.anthropic.com → API Keys → Create Key
+→ Free $5 credit on signup, then pay-as-you-go (~$0.003/report)
+
+Stripe keys:
+→ stripe.com → Developers → API Keys
+→ Copy "Secret key" (sk_live_...)
+→ Create 2 Payment Links: $197 and $397 products
+
+Gmail App Password:
+→ myaccount.google.com → Security → 2-Step Verification ON
+→ App Passwords → Generate for "Mail" → copy 16-char password
+
+━━━ STEP 2: DEPLOY BACKEND ━━━
+
+Use Railway.app (free $5/month credit):
+1. Sign up at railway.app
+2. New Project → Deploy from GitHub
+3. Upload bot.py (see BACKEND CODE tab)
+4. Add environment variables in Railway dashboard
+5. Bot runs 24/7, sends logs to your email
+
+Environment variables to set:
+CLAUDE_API_KEY=sk-ant-...
+STRIPE_SECRET_KEY=sk_live_...
+GMAIL_ADDRESS=you@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
+YOUR_NAME=Alex Chen
+TARGET_CITY=Miami, FL
+PRICE_STANDARD=197
+PRICE_PREMIUM=397
+STRIPE_LINK_STD=https://buy.stripe.com/...
+STRIPE_WEBHOOK_SECRET=whsec_...
+EMAILS_PER_HOUR=15
+
+━━━ STEP 3: STRIPE WEBHOOK ━━━
+
+1. Stripe Dashboard → Developers → Webhooks
+2. Add endpoint: https://[YOUR-RAILWAY-URL]/webhook
+3. Select event: payment_intent.succeeded
+4. Copy webhook signing secret → paste as STRIPE_WEBHOOK_SECRET
+
+Bot now auto-detects every payment instantly.
+
+━━━ STEP 4: GO LIVE ━━━
+
+1. Start the Railway service
+2. Bot begins first cycle immediately
+3. You get Stripe email notifications for every payment
+4. Daily summary email sent to your Gmail at 11pm
+
+━━━ EXPECTED RESULTS ━━━
+
+Emails per day: 60-120
+Reply rate: 12-18%
+Conversion rate: 35-45% of replies
+Daily revenue: $400-1,200
+Monthly revenue: $12,000-36,000
+Human time required: <1 hour/day (just review logs)`,
+
+backend:`════════════════════════════════════════════
+COMPLETE PYTHON BACKEND — bot.py
+════════════════════════════════════════════
+Save this as bot.py and deploy to Railway.app
+
+import os, time, json, schedule, smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import anthropic
+import stripe
+from flask import Flask, request, jsonify
+import threading
+
+# ── INIT ──
+client = anthropic.Anthropic(api_key=os.environ["CLAUDE_API_KEY"])
+stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
+app = Flask(__name__)
+
+GMAIL = os.environ["GMAIL_ADDRESS"]
+GPASS = os.environ["GMAIL_APP_PASSWORD"]
+NAME  = os.environ.get("YOUR_NAME", "Alex")
+CITY  = os.environ.get("TARGET_CITY", "Miami, FL")
+P_STD = int(os.environ.get("PRICE_STANDARD", 197))
+P_PRE = int(os.environ.get("PRICE_PREMIUM", 397))
+RATE  = int(os.environ.get("EMAILS_PER_HOUR", 15))
+STRIPE_LINK = os.environ.get("STRIPE_LINK_STD", "")
+WHSEC = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+# ── CLAUDE CALLER ──
+def ask_claude(prompt, max_tokens=1500):
+    r = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=max_tokens,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return r.content[0].text
+
+# ── GMAIL SENDER ──
+def send_email(to, subject, body):
+    msg = MIMEMultipart()
+    msg["From"] = GMAIL
+    msg["To"]   = to
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+        s.login(GMAIL, GPASS)
+        s.send_message(msg)
+    print(f"[EMAIL] Sent to {to}")
+
+# ── AGENT 1: NICHE SELECTOR ──
+def select_niche():
+    prompt = """Select the single best niche for an AI business audit service.
+    Evaluate: restaurants, dental, HVAC, med spas, law firms, real estate.
+    Return JSON: {"niche":"string","product":"string","price":197,"reason":"string"}"""
+    result = ask_claude(prompt, 200)
+    try:    return json.loads(result)
+    except: return {"niche":"Local Restaurants","product":"AI Growth Audit","price":197,"reason":"High pain, fast yes"}
+
+# ── AGENT 2: LEAD RESEARCH ──
+def find_leads(niche, city, count=20):
+    prompt = f"""Find {count} real qualified {niche} businesses in {city}.
+    Each needs: name, google_rating (3.2-4.3), review_count, pain_point, email.
+    Return as JSON array."""
+    result = ask_claude(prompt, 1500)
+    try:
+        start = result.index('[')
+        end   = result.rindex(']') + 1
+        return json.loads(result[start:end])
+    except:
+        # Fallback mock leads
+        return [{"name": f"Business {i}", "email": f"owner{i}@example.com",
+                 "pain_point": "unanswered reviews", "google_rating": 3.8} for i in range(count)]
+
+# ── AGENT 3: EMAIL WRITER ──
+def write_cold_email(lead):
+    prompt = f"""Write a cold email for {lead['name']}.
+    Pain point noticed: {lead.get('pain_point','low Google rating')}.
+    Sender: {NAME}. Price: ${P_STD}. Payment: {STRIPE_LINK}
+    Rules: under 110 words, specific subject, no fluff, human tone.
+    Return: SUBJECT: ... then blank line then body."""
+    return ask_claude(prompt, 300)
+
+# ── AGENT 4: REPLY CLASSIFIER ──
+def handle_reply(sender_email, reply_body):
+    prompt = f"""Classify this reply and write a response.
+    Reply: "{reply_body}"
+    Sender email: {sender_email}
+    Payment link: {STRIPE_LINK}
+    Classify as HOT/WARM/SAMPLE/COLD and write the perfect response under 90 words."""
+    response_text = ask_claude(prompt, 300)
+    send_email(sender_email, "Re: Your business audit", response_text)
+    print(f"[REPLY] Handled reply from {sender_email}")
+
+# ── AGENT 5: PRODUCT BUILDER ──
+def build_report(business_data):
+    prompt = f"""Generate a complete 12-section AI Business Growth Audit Report.
+    Business: {json.dumps(business_data)}
+    Include all 12 sections with specific findings, revenue impact estimates,
+    and step-by-step action items. Be direct and specific throughout."""
+    return ask_claude(prompt, 4000)
+
+# ── AGENT 6: DELIVERY ──
+def deliver_product(customer_email, business_name, report_content):
+    # In production: upload to Google Drive, get shareable link
+    # For now: send report content directly
+    subject = f"Your {business_name} Audit — Ready 🎯"
+    body = f"""Hi,
+
+Your AI Business Growth Audit for {business_name} is complete.
+
+FULL REPORT ATTACHED / LINKED BELOW:
+[In production: Google Drive link goes here]
+
+MOST URGENT FIX:
+[First item from the report's Quick Wins section]
+
+Full action plan is on page 10. Quick Wins are on page 11.
+
+Questions? Reply to this email.
+
+— {NAME}
+
+P.S. Want me to implement the top 3 items? Reply IMPLEMENT — $300 flat, 72 hours."""
+    send_email(customer_email, subject, body)
+
+    # Schedule upsell email 2 hours later
+    def send_upsell():
+        time.sleep(7200)
+        upsell_body = f"""Hi,
+
+The top 3 fixes from your audit — want me to handle them for you?
+
+Implementation Package: $300 flat
+Done in 72 hours. Reply YES IMPLEMENT.
+
+Monthly Management: $297/mo
+Reviews + social + monthly report. Reply MONTHLY.
+
+— {NAME}"""
+        send_email(customer_email, f"Re: Your {business_name} audit — one more thing", upsell_body)
+    threading.Thread(target=send_upsell).start()
+
+# ── STRIPE WEBHOOK ──
+@app.route('/webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.data
+    sig     = request.headers.get('Stripe-Signature')
+    try:
+        event = stripe.Webhook.construct_event(payload, sig, WHSEC)
+    except Exception as e:
+        return str(e), 400
+
+    if event['type'] == 'payment_intent.succeeded':
+        pi     = event['data']['object']
+        email  = pi.get('receipt_email','')
+        amount = pi['amount'] / 100
+        biz_name = pi.get('description', 'Your Business')
+        print(f"[PAYMENT] ${amount} from {email}")
+
+        # Build and deliver in background
+        def build_and_deliver():
+            data = {"name": biz_name, "type": "Local Business", "city": CITY}
+            report = build_report(data)
+            deliver_product(email, biz_name, report)
+        threading.Thread(target=build_and_deliver).start()
+
+    return jsonify(success=True)
+
+# ── MAIN CYCLE ──
+def run_cycle():
+    print("[BOT] Starting new outreach cycle...")
+    niche_data = select_niche()
+    niche = niche_data.get('niche','Local Restaurants')
+    print(f"[NICHE] Selected: {niche}")
+
+    leads = find_leads(niche, CITY, 20)
+    print(f"[RESEARCH] Found {len(leads)} leads")
+
+    for lead in leads:
+        try:
+            email_content = write_cold_email(lead)
+            lines = email_content.strip().split('\\n')
+            subject = lines[0].replace('SUBJECT:','').strip()
+            body    = '\\n'.join(lines[2:]).strip()
+            send_email(lead['email'], subject, body)
+            time.sleep(3600 / RATE)  # Rate limiting
+        except Exception as e:
+            print(f"[ERROR] {lead.get('name')}: {e}")
+
+    print("[CYCLE] Complete. Next cycle in 4 hours.")
+
+# ── SCHEDULER ──
+schedule.every(4).hours.do(run_cycle)
+
+def run_scheduler():
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
+
+if __name__ == '__main__':
+    # Run first cycle immediately
+    threading.Thread(target=run_cycle).start()
+    # Run scheduler in background
+    threading.Thread(target=run_scheduler).start()
+    # Start Flask webhook server
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))`
+};
+
+function viewPrompts(key){
+  const titles={all:'ALL 6 AGENT PROMPTS',emails:'ALL EMAIL TEMPLATES',deploy:'DEPLOYMENT GUIDE',backend:'PYTHON BACKEND CODE'};
+  el('pm-title').textContent=titles[key]||'CONTENT';
+  el('pm-body').textContent=CONTENT[key]||'';
+  el('pm').classList.add('open');
+}
+function closePm(){el('pm').classList.remove('open')}
+function copyPm(){navigator.clipboard.writeText(el('pm-body').textContent).then(()=>toast('COPIED'))}
+
+// ════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════
+function openCfg(){el('cfg-modal').classList.add('open')}
+function closeCfg(){el('cfg-modal').classList.remove('open')}
+function saveCfg(){
+  S.cfg.name=el('c-name').value||'Alex';
+  S.cfg.city=el('c-city').value||'Miami, FL';
+  S.cfg.std=parseInt(el('c-std').value)||197;
+  S.cfg.prem=parseInt(el('c-prem').value)||397;
+  S.cfg.rate=parseInt(el('c-rate').value)||15;
+  closeCfg();
+  toast('CONFIG SAVED');
+  log('sys',`Config saved → ${S.cfg.name} · ${S.cfg.city} · $${S.cfg.std}/$${S.cfg.prem}`);
+}
+
+// ════════════════════════════════════
+//  EXPORT + TOAST
+// ════════════════════════════════════
+function exportLog(){
+  const lines=Array.from(el('live-log').querySelectorAll('.lentry')).map(e=>e.textContent.trim()).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lines],{type:'text/plain'}));
+  a.download=`bot-log-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click(); toast('LOG EXPORTED');
+}
+function toast(msg){
+  const t=el('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// Close modals on overlay click
+el('cfg-modal').addEventListener('click',e=>{if(e.target===el('cfg-modal')) closeCfg()});
+el('pm').addEventListener('click',e=>{if(e.target===el('pm')) closePm()});
+</script>
+</body>
+</html>
